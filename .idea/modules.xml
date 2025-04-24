@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Spotify-backend.iml" filepath="$PROJECT_DIR$/.idea/modules/Spotify-backend.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Spotify-backend.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Spotify-backend.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Spotify-backend.test.iml" filepath="$PROJECT_DIR$/.idea/modules/Spotify-backend.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/com.spotifyapp.Spotify-backend.main.iml" filepath="$PROJECT_DIR$/.idea/modules/com.spotifyapp.Spotify-backend.main.iml" />
     </modules>
   </component>
 </project>
