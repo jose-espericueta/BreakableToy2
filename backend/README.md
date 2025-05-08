@@ -55,18 +55,71 @@ http://localhost:8080
 - Docker (optional for containerized deployment)
 - Docker Compose (for multi-container orchestration)
 
-## Testing 
+## Testing
 
-Run unit tests and generate code coverage report with:
+To run unit tests and generate a code coverage report:
 
 ```bash
-./gradle test
+./gradlew test
 ```
-JaCoCo reports will be available under
+
+JaCoCo coverage reports are available at:
 
 ```
 build/reports/tests/test/index.html
 ```
+
+### Covered Tests
+
+The following OAuth-related components are covered with unit tests:
+
+- **OAuthService**
+   - `buildAuthUri()`: Ensures the correct Spotify login URL is generated
+- **AuthController**
+   - `POST /auth/spotify`: Returns the redirect URL to initiate Spotify login
+   - `GET /auth/callback`: Simulates receiving the code and exchanging it for tokens
+
+All tests use **JUnit 5**, **Mockito**, and **MockMvc** for controller testing.
+
+## Spotify OAuth 2.0 Authentication Flow
+
+This backend application integrates with the Spotify Web API using OAuth 2.0 Authorization Code Flow. Below is a summary of how the authentication process works:
+
+### Authentication Steps
+
+1. **Initiate Login**
+   - `POST /auth/spotify`
+   - Returns a `redirectUrl` that points to Spotify’s login/authorization page.
+
+2. **Redirect to Spotify**
+   - The frontend (or user) uses the `redirectUrl` to navigate to Spotify’s consent page.
+
+3. **User Grants Access**
+   - After login and authorization, Spotify redirects the user to the backend callback URL:
+     ```
+     http://127.0.0.1:8080/auth/callback?code=...
+     ```
+
+4. **Backend Exchanges Code for Tokens**
+   - The `code` from Spotify is received and exchanged for an `access_token` and `refresh_token` via:
+     ```http
+     GET /auth/callback?code=...
+     ```
+
+5. **Token Storage**
+   - Tokens are securely stored in memory using a singleton component (`SpotifyTokenStore`) so they can be reused for authenticated requests to Spotify.
+
+### Data Flow
+
+- **Request**: Backend → Spotify (`/api/token`)
+- **Response**: Spotify returns token data, which is mapped via `SpotifyTokenResponse` DTO.
+- **Storage**: Tokens are saved temporarily in memory (not persisted across server restarts).
+
+### Security Notes
+
+- Tokens are never logged or exposed to the client directly.
+- Storage is temporary (RAM-only) for development purposes.
+- Can be replaced with secure DB storage in production.
    
 ## License
 
