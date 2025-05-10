@@ -48,6 +48,20 @@ The backend will be available at:
 http://localhost:8080
 ```
 
+## Environment Variables
+
+This application uses environment variables to securely manage sensitive configuration like Spotify credentials.
+
+Create a `.env` file in the root directory and add the following:
+
+```env
+SPOTIFY_CLIENT_ID=your-client-id
+SPOTIFY_CLIENT_SECRET=your-client-secret
+SPOTIFY_REDIRECT_URI=http://127.0.0.1:8080/auth/callback
+```
+
+The `.env` file is automatically read by Docker Compose. Make sure to **not commit this file** — it's already listed in `.gitignore`.
+
 ## Requirements
 
 - Java 21
