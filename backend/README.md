@@ -123,6 +123,36 @@ This backend application integrates with the Spotify Web API using OAuth 2.0 Aut
 5. **Token Storage**
    - Tokens are securely stored in memory using a singleton component (`SpotifyTokenStore`) so they can be reused for authenticated requests to Spotify.
 
+### Token Refresh Logic
+To ensure continued access to Spotify's Web API without requiring the user to log in again, this backend implements a **token refresh mechanism**
+
+### How it works
+
+1. **Access Token Expiry Detection**:
+   - The application checks if the access token has expired before making requests.
+   - This is done using the `SpotifyTokenStore` class, which tracks the token's expiration time (`expiresAt`).
+
+2. **Automatic Refresh on Expiry**:
+   - If the token is expired, the method `refreshAccessToken()` in `OAuthService` uses the stored refresh token to request a  new access token.
+   - The new token and its expiration time are stored again in memory.
+
+3. **Transparent Retry on 401**
+   - If a request to Spotify's API returns `401 Unauthorized`, the `SpotifyAuthInterceptor` catches it.
+   - It triggers a token refresh and retries the failed request automatically.
+
+4. **Token Caching**:
+   - When a token is refreshed, its new expiration timestamp is stored using `Instant.now().plusSeconds(expiresIn)`.
+
+### Key Files
+
+- `OAuthService.java`: Contains the logic to detect expiration and refresh tokens.
+- `SpotifyTokenStore.java`: Stores access/refresh tokens and calculates expiration time.
+- `SpotifyAuthInterceptor.java`: Handles retrying failed Spotify request transparently.
+
+### No user re-login needed
+
+This logic ensures the user stays logged in, as long as the refresh token is valid.
+
 ### Data Flow
 
 - **Request**: Backend → Spotify (`/api/token`)
