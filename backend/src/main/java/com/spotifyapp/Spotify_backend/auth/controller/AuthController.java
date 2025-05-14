@@ -13,8 +13,18 @@ public class AuthController {
     private final OAuthService oAuthService;
 
     public AuthController(OAuthService oAuthService) {
+
         this.oAuthService = oAuthService;
     }
+
+    @GetMapping("/spotify")
+    public ResponseEntity<Void> redirectToSpotifyAuth() {
+        String spotifyAuthUrl = oAuthService.buildAuthUri();
+        return ResponseEntity.status(302)
+                .header("Location", spotifyAuthUrl)
+                .build();
+    }
+
 
     @PostMapping("/spotify")
     public ResponseEntity<LoginRedirectResponse> authorizeUser() {

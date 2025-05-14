@@ -79,3 +79,23 @@ npx vitest run
 - Vite
 - ESLint + Prettier (Airbnb config)
 - React Testing Library + Vitest
+
+## Login Flow (Frontend)
+
+The application includes a login page to initiate the Spotify OAuth flow.
+
+### How it works:
+1. When the user visits `/login`, they see a "Login with Spotify" button.
+2. Clicking the button redirects the user to the backend endpoint `/auth/spotify` to start the OAuth process.
+3. Upon successful authentication, Spotify redirects the user back with an `access_token` as a query parameter.
+4. The frontend parses the token and stores it in `localStorage` and React Context.
+5. The user is then redirected to the `/dashboard` page.
+
+### Technologies used:
+- React Router for page navigation
+- React Context API for token storage
+- LocalStorage to persist token
+- Vitest + Testing Library for testing
+
+### Error Handling:
+If the token is not present or invalid, the app remains on the login page.
