@@ -1,6 +1,6 @@
 package com.spotifyapp.Spotify_backend.config;
 
-import com.spotifyapp.Spotify_backend.auth.service.OAuthService;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,14 +14,18 @@ import java.util.Collections;
 public class RestTemplateConfig {
 
     @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder, OAuthService oAuthService) {
+    public RestTemplate restTemplate(RestTemplateBuilder builder, ObjectProvider<com.spotifyapp.Spotify_backend.auth.service.OAuthService> oAuthServiceProvider) {
         RestTemplate restTemplate = builder.build();
 
         ClientHttpRequestInterceptor retryInterceptor = (request, body, execution) -> {
             ClientHttpResponse response = execution.execute(request, body);
 
             if (response.getStatusCode().value() == 401) {
-                oAuthService.refreshAccessToken();
+                // Accede al OAuthService solo cuando lo necesites (evita ciclo directo)
+                com.spotifyapp.Spotify_backend.auth.service.OAuthService oAuthService = oAuthServiceProvider.getIfAvailable();
+                if (oAuthService != null) {
+                    oAuthService.refreshAccessToken();
+                }
 
                 return execution.execute(request, body);
             }

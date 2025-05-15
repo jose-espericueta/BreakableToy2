@@ -2,6 +2,7 @@ package com.spotifyapp.Spotify_backend.auth.service;
 
 import com.spotifyapp.Spotify_backend.auth.config.SpotifyOAuthConfig;
 import com.spotifyapp.Spotify_backend.auth.dto.SpotifyTokenResponse;
+import com.spotifyapp.Spotify_backend.auth.dto.TopArtistResponse;
 import com.spotifyapp.Spotify_backend.auth.interceptor.SpotifyAuthInterceptor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -11,18 +12,19 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class OAuthService {
     private final SpotifyOAuthConfig config;
     private final SpotifyTokenStore tokenStore;
+    private final RestTemplate restTemplate;
 
-    public OAuthService(SpotifyOAuthConfig config, SpotifyTokenStore tokenStore) {
+    public OAuthService(SpotifyOAuthConfig config, SpotifyTokenStore tokenStore, RestTemplate restTemplate) {
         this.config = config;
         this.tokenStore = tokenStore;
+        this.restTemplate = restTemplate;
     }
 
     public String buildAuthUri() {
@@ -117,5 +119,38 @@ public class OAuthService {
         }
 
         return tokenStore.getAccessToken();
+    }
+
+    public List<TopArtistResponse> getTopArtists(String accessToken) {
+        System.out.println("Asking artist with token: " + accessToken);
+        try {
+            String url = "https://api.spotify.com/v1/me/top/artists?limit=10";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(accessToken);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    Map.class
+            );
+
+            System.out.println("Full answer: " + response);
+            System.out.println("Body: " + response.getBody());
+
+            List<Map<String, Object>> items = (List<Map<String, Object>>) response.getBody().get("items");
+
+            return items.stream().map(item -> {
+                String name = (String) item.get("name");
+                List<Map<String, Object>> images = (List<Map<String, Object>>) item.get("images");
+                String imageUrl = images.isEmpty() ? null : (String) images.get(0).get("url");
+                return new TopArtistResponse(name, imageUrl);
+            }).collect(Collectors.toList());
+        }catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error getting Artist from Spotify");
+        }
     }
 }

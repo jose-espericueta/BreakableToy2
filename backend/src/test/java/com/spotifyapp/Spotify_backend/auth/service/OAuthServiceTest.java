@@ -4,6 +4,7 @@ import com.spotifyapp.Spotify_backend.auth.config.SpotifyOAuthConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.web.client.RestTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -15,14 +16,16 @@ class OAuthServiceTest {
     void setUp() {
         SpotifyOAuthConfig mockConfig = Mockito.mock(SpotifyOAuthConfig.class);
         SpotifyTokenStore tokenStore = new SpotifyTokenStore();
+        RestTemplate mockRestTemplate = Mockito.mock(RestTemplate.class);
 
         Mockito.when(mockConfig.getClientId()).thenReturn("mock-client-id");
         Mockito.when(mockConfig.getClientSecret()).thenReturn("mock-secret");
         Mockito.when(mockConfig.getRedirectUri()).thenReturn("http://127.0.0.1:8080/auth/callback");
         Mockito.when(mockConfig.getScopes()).thenReturn("user-read-private user-read-email");
 
-        oAuthService = new OAuthService(mockConfig, tokenStore);
+        oAuthService = new OAuthService(mockConfig, tokenStore, mockRestTemplate);
     }
+
 
     @Test
     void testBuildAuthUriContainsCorrectParameters() {
