@@ -99,3 +99,13 @@ The application includes a login page to initiate the Spotify OAuth flow.
 
 ### Error Handling:
 If the token is not present or invalid, the app remains on the login page.
+
+---
+
+## Top Artists Feature
+
+Once the user logs in, the app fetches their top 10 artists from Spotify and displays them on the dashboard.
+
+- Each artist card shows the name and image
+- Uses Spotify's `GET /v1/me/top/artists` endpoint via backend
+- Handles loading, error and empty states

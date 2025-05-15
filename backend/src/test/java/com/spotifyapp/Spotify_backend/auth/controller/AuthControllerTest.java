@@ -55,4 +55,12 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.scope").value("user-read-private user-read-email"));
 
     }
+
+    @Test
+    void shouldReturnTopArtists() throws Exception {
+        mockMvc.perform(get("/auth/me/top/artists")
+                .header("Authorization", "Bearer dummy_token"))
+                .andExpect(status().isOk());
+
+    }
 }

@@ -4,21 +4,21 @@ import { AuthContext } from '../context/AuthContext';
 
 const Home = () => {
   const navigate = useNavigate();
-  const { setToken } = useContext(AuthContext);
   const location = useLocation();
+  const { setToken } = useContext(AuthContext);
 
   useEffect(() => {
-    const hash = new URLSearchParams(location.search);
-    const error = hash.get('error');
-    const accessToken = hash.get('access_token');
+    const params = new URLSearchParams(location.search);
+    const token = params.get('access_token');
+    const error = params.get('error');
 
     if (error) {
-        alert('Login failed: ' + error);
-        return;
+      alert('Login failed: ' + error);
+      return;
     }
 
-    if (accessToken) {
-      setToken(accessToken);
+    if (token) {
+      setToken(token);
       navigate('/dashboard');
     }
   }, [location, setToken, navigate]);
