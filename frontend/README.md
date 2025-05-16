@@ -109,3 +109,29 @@ Once the user logs in, the app fetches their top 10 artists from Spotify and dis
 - Each artist card shows the name and image
 - Uses Spotify's `GET /v1/me/top/artists` endpoint via backend
 - Handles loading, error and empty states
+
+---
+
+## Artist and Album Detail Pages
+
+As part of feature **#9**, the app now supports detailed views for both artists and albums.
+
+### Artist Detail Page
+- Route: `/artist/:id`
+- Shows artist name, image, genres and biography
+- Lists all albums by the artist (clickable)
+
+### Album Detail Page
+- Route: `/album/:id`
+- Shows album name, cover image, release date and number of tracks
+- Lists all tracks in the album
+
+### Backend Support
+- `GET /artists/{id}` returns artist details
+- `GET /artists/{id}/albums` returns list of albums
+- `GET /albums/{id}` returns album info and tracks
+
+### Tests
+- Added backend tests for these endpoints
+- Frontend tests cover page rendering and navigation (where applicable)
+
