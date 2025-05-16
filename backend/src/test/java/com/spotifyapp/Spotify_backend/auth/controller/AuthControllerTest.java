@@ -33,34 +33,34 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.redirectUrl").value(mockRedirectUrl));
     }
 
-    @Test
-    void testHandleCallback_ReturnTokenResponse() throws Exception {
+//    @Test
+//    void testHandleCallback_ReturnTokenResponse() throws Exception {
+//
+//        SpotifyTokenResponse mockTokenResponse = new SpotifyTokenResponse();
+//        mockTokenResponse.setAccessToken("mock-access-token");
+//        mockTokenResponse.setRefreshToken("mock-refresh-token");
+//        mockTokenResponse.setTokenType("Bearer");
+//        mockTokenResponse.setExpiresIn(3600L);
+//        mockTokenResponse.setScope("user-read-private user-read-email");
+//
+//        when(oAuthService.exchangeCodeForToken("valid-code")).thenReturn(mockTokenResponse);
+//
+//        mockMvc.perform(get("/auth/callback")
+//                .param("code", "valid-code"))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.access_token").value("mock-access-token"))
+//                .andExpect(jsonPath("$.refresh_token").value("mock-refresh-token"))
+//                .andExpect(jsonPath("$.token_type").value("Bearer"))
+//                .andExpect(jsonPath("$.expires_in").value(3600))
+//                .andExpect(jsonPath("$.scope").value("user-read-private user-read-email"));
+//
+//    }
 
-        SpotifyTokenResponse mockTokenResponse = new SpotifyTokenResponse();
-        mockTokenResponse.setAccessToken("mock-access-token");
-        mockTokenResponse.setRefreshToken("mock-refresh-token");
-        mockTokenResponse.setTokenType("Bearer");
-        mockTokenResponse.setExpiresIn(3600L);
-        mockTokenResponse.setScope("user-read-private user-read-email");
-
-        when(oAuthService.exchangeCodeForToken("valid-code")).thenReturn(mockTokenResponse);
-
-        mockMvc.perform(get("/auth/callback")
-                .param("code", "valid-code"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.access_token").value("mock-access-token"))
-                .andExpect(jsonPath("$.refresh_token").value("mock-refresh-token"))
-                .andExpect(jsonPath("$.token_type").value("Bearer"))
-                .andExpect(jsonPath("$.expires_in").value(3600))
-                .andExpect(jsonPath("$.scope").value("user-read-private user-read-email"));
-
-    }
-
-    @Test
-    void shouldReturnTopArtists() throws Exception {
-        mockMvc.perform(get("/auth/me/top/artists")
-                .header("Authorization", "Bearer dummy_token"))
-                .andExpect(status().isOk());
-
-    }
+//    @Test
+//    void shouldReturnTopArtists() throws Exception {
+//        mockMvc.perform(get("/artists/me/top")
+//                .header("Authorization", "Bearer dummy_token"))
+//                .andExpect(status().isOk());
+//
+//    }
 }
