@@ -54,4 +54,15 @@ public class ArtistController {
         return ResponseEntity.ok(albums);
     }
 
+    @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> searchSpotify(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam("q") String query,
+            @RequestParam("type") String type) {
+
+        String token = authHeader.replace("Bearer ", "");
+        Object result = artistService.searchSpotify(token, query, type);
+        return ResponseEntity.ok(result);
+    }
+
 }
