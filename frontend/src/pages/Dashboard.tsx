@@ -1,12 +1,14 @@
 import { useEffect, useState, useContext } from 'react';
 import ArtistCard from '../components/ArtistCard';
 import { AuthContext } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const { token } = useContext(AuthContext);
   const [artists, setArtists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
 
@@ -14,7 +16,7 @@ const Dashboard = () => {
 
     if (!token) return;
 
-    fetch('http://127.0.0.1:8080/auth/me/top/artists', {
+    fetch('http://127.0.0.1:8080/artists/me/top', {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -35,7 +37,13 @@ const Dashboard = () => {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 20 }}>
       {artists.map((artist, index) => (
-        <ArtistCard key={index} name={artist.name} imageUrl={artist.imageUrl} />
+        <div
+        key={artist.id}
+        style={{ cursor: "pointer" }}
+        onClick={() => navigate(`/artist/${artist.id}`)}
+        >
+            <ArtistCard name={artist.name} imageUrl={artist.imageUrl} />
+        </div>
       ))}
     </div>
   );
