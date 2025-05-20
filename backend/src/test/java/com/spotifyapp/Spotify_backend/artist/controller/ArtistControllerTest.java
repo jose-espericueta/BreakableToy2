@@ -65,25 +65,25 @@ public class ArtistControllerTest {
                 .andExpect(jsonPath("$.trackNames[0]").value("Track 1"));
     }
 
-//    @Test
-//    public void testSearchArtists() throws Exception {
-//        String mockResponseJson = """
-//        {
-//            "artists": {
-//                "items": []
-//            }
-//        }
-//    """;
-//
-//        when(artistService.searchSpotify("shakira", "artist", "valid-token"))
-//                .thenReturn(mockResponseJson);
-//
-//        mockMvc.perform(get("/search")
-//                        .param("q", "shakira")
-//                        .param("type", "artist")
-//                        .header("Authorization", "Bearer valid-token")
-//                        .accept(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isOk())
-//                .andExpect(content().string(org.hamcrest.Matchers.containsString("artists")));
-//    }
+    @Test
+    public void testSearchArtists() throws Exception {
+        String mockResponseJson = """
+        {
+            "artists": {
+                "items": []
+            }
+        }
+    """;
+
+        when(artistService.searchSpotify("valid-token", "shakira", "artist"))
+                .thenReturn(mockResponseJson);
+
+        mockMvc.perform(get("/artists/search")
+                        .param("q", "shakira")
+                        .param("type", "artist")
+                        .header("Authorization", "Bearer valid-token")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("artists")));
+    }
 }

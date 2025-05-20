@@ -1,6 +1,7 @@
 import { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import './AlbumPage.css';
 
 interface AlbumDetail {
   name: string;
@@ -28,19 +29,28 @@ export default function AlbumPage() {
       .catch((err) => console.error("Failed to load album", err));
   }, [id, token]);
 
-  if (!album) return <div>Loading...</div>;
+  if (!album) return <div className="album-container">Loading...</div>;
 
   return (
-    <div>
-      <button onClick={() => history.back()}>Go back</button>
-      <h1>{album.name}</h1>
-      {album.imageUrl && <img src={album.imageUrl} alt={album.name} width={300} />}
-      <p><strong>Release Date:</strong> {album.releaseDate}</p>
-      <p><strong>Total Tracks:</strong> {album.totalTracks}</p>
-      <h2>Track List</h2>
-      <ol>
+    <div className="album-container">
+      <button className="go-back" onClick={() => history.back()}>Go back</button>
+
+      <div className="album-header">
+        <img src={album.imageUrl} alt={album.name} className="album-image" />
+        <div className="album-info">
+          <h1 className="album-title">{album.name}</h1>
+          <p><strong>Release Date:</strong> {album.releaseDate}</p>
+          <p><strong>Total Tracks:</strong> {album.totalTracks}</p>
+        </div>
+      </div>
+
+      <h2 className="tracklist-title">Track List</h2>
+      <ol className="track-list">
         {album.trackNames.map((track, index) => (
-          <li key={index}>{track}</li>
+          <li key={index} className="track-item">
+            <span className="track-index">{index + 1}</span>
+            <span className="track-name">{track}</span>
+          </li>
         ))}
       </ol>
     </div>

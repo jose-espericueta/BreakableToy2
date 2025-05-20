@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from 'react';
 import ArtistCard from '../components/ArtistCard';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import './Dashboard.css'
 
 const Dashboard = () => {
   const { token } = useContext(AuthContext);
@@ -58,29 +59,30 @@ const Dashboard = () => {
   if (results.length === 0) return <p>No results found</p>;
 
   return (
-    <div style={{ padding: '20px' }}>
-      <div style={{ marginBottom: '10px' }}>
-        <label style={{ marginRight: '10px' }}>Search type:</label>
+    <div className="dashboard-container">
+      <div className="search-controls">
+        <label htmlFor="searchType" className="search-label">Search type:</label>
         <select
+          id="searchType"
+          className="search-select"
           value={searchType}
           onChange={(e) => setSearchType(e.target.value)}
-          style={{ padding: '5px' }}
         >
           <option value="artist">Artist</option>
           <option value="album">Album</option>
           <option value="track">Track</option>
         </select>
+
+        <input
+          type="text"
+          className="search-input"
+          placeholder={`Search for ${searchType}s...`}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
       </div>
 
-      <input
-        type="text"
-        placeholder={`Search for ${searchType}s...`}
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        style={{ width: '100%', padding: '10px', marginBottom: '20px', fontSize: '16px' }}
-      />
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 20 }}>
         {results.map((item, index) => (
           <div
             key={item.id || index}
@@ -90,20 +92,20 @@ const Dashboard = () => {
               else if (searchType === 'album') navigate(`/album/${item.id}`);
               else if (searchType === 'track') {
                 fetch(`https://api.spotify.com/v1/tracks/${item.id}`, {
-                      headers: {
-                        Authorization: `Bearer ${token}`
-                      }
-                    })
-                      .then(res => res.json())
-                      .then(data => {
-                          console.log("preview_url: ", data.preview_url);
-                        if (data.preview_url) {
-                          const audio = new Audio(data.preview_url);
-                          audio.play();
-                        } else {
-                          alert('No preview available for this track.');
-                        }
-                      });
+                  headers: {
+                    Authorization: `Bearer ${token}`
+                  }
+                })
+                  .then(res => res.json())
+                  .then(data => {
+                    console.log("preview_url: ", data.preview_url);
+                    if (data.preview_url) {
+                      const audio = new Audio(data.preview_url);
+                      audio.play();
+                    } else {
+                      alert('No preview available for this track.');
+                    }
+                  });
               }
             }}
           >
