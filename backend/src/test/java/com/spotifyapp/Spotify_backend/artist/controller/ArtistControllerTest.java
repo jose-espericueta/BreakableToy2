@@ -64,4 +64,26 @@ public class ArtistControllerTest {
                 .andExpect(jsonPath("$.name").value("Mock Album"))
                 .andExpect(jsonPath("$.trackNames[0]").value("Track 1"));
     }
+
+//    @Test
+//    public void testSearchArtists() throws Exception {
+//        String mockResponseJson = """
+//        {
+//            "artists": {
+//                "items": []
+//            }
+//        }
+//    """;
+//
+//        when(artistService.searchSpotify("shakira", "artist", "valid-token"))
+//                .thenReturn(mockResponseJson);
+//
+//        mockMvc.perform(get("/search")
+//                        .param("q", "shakira")
+//                        .param("type", "artist")
+//                        .header("Authorization", "Bearer valid-token")
+//                        .accept(MediaType.APPLICATION_JSON))
+//                .andExpect(status().isOk())
+//                .andExpect(content().string(org.hamcrest.Matchers.containsString("artists")));
+//    }
 }

@@ -106,4 +106,16 @@ public class ArtistService {
         }).collect(Collectors.toList());
     }
 
+    public Object searchSpotify(String accessToken, String query, String type) {
+        String url = "https://api.spotify.com/v1/search?q=" + query + "&type=" + type + "&limit=10";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
+        return response.getBody();
+    }
+
+
 }
