@@ -4,18 +4,6 @@ import { AuthContext } from "../context/AuthContext";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 global.fetch = vi.fn((url) => {
-  if (url.includes("artists/123")) {
-    return Promise.resolve({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          name: "Test Artist",
-          imageUrl: "http://image.url",
-          biography: "Biography not available",
-          genres: ["rock", "pop"],
-        }),
-    });
-  }
   if (url.includes("artists/123/albums")) {
     return Promise.resolve({
       ok: true,
@@ -27,6 +15,18 @@ global.fetch = vi.fn((url) => {
             imageUrl: "http://album.url",
           },
         ]),
+    });
+  }
+  if (url.includes("artists/123")) {
+    return Promise.resolve({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          name: "Test Artist",
+          imageUrl: "http://image.url",
+          biography: "Biography not available",
+          genres: ["rock", "pop"],
+        }),
     });
   }
   return Promise.reject("Unknown API");

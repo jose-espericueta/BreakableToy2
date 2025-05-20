@@ -1,5 +1,6 @@
 package com.spotifyapp.Spotify_backend.artist.controller;
 
+import com.spotifyapp.Spotify_backend.artist.dto.TopArtistResponse;
 import com.spotifyapp.Spotify_backend.artist.service.ArtistService;
 import com.spotifyapp.Spotify_backend.artist.dto.ArtistDetailResponse;
 import com.spotifyapp.Spotify_backend.artist.dto.AlbumDetailResponse;
@@ -85,5 +86,19 @@ public class ArtistControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("artists")));
+    }
+
+    @Test
+    public void testGetTopArtists() throws Exception {
+        List<TopArtistResponse> mockArtists = List.of(
+                new TopArtistResponse("1", "Test Artist", "http://image.url")
+        );
+
+        when(artistService.getTopArtists("valid-token")).thenReturn(mockArtists);
+
+        mockMvc.perform(get("/artists/me/top")
+                        .header("Authorization", "Bearer valid-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("Test Artist"));
     }
 }

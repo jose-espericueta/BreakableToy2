@@ -2,24 +2,27 @@ package com.spotifyapp.Spotify_backend.auth.service;
 
 import com.spotifyapp.Spotify_backend.auth.config.SpotifyOAuthConfig;
 import com.spotifyapp.Spotify_backend.auth.dto.SpotifyTokenResponse;
-import com.spotifyapp.Spotify_backend.artist.dto.TopArtistResponse;
 import com.spotifyapp.Spotify_backend.auth.interceptor.SpotifyAuthInterceptor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Base64;
+import java.util.Objects;
+import java.util.UUID;
 
 @Service
 public class OAuthService {
     private final SpotifyOAuthConfig config;
     private final SpotifyTokenStore tokenStore;
     private final RestTemplate restTemplate;
+
+    private static final int MAX_RETRIES = 3;
 
     public OAuthService(SpotifyOAuthConfig config, SpotifyTokenStore tokenStore, RestTemplate restTemplate) {
         this.config = config;
@@ -47,8 +50,25 @@ public class OAuthService {
         return restTemplate;
     }
 
-    public SpotifyTokenResponse exchangeCodeForToken(String code) {
+    private ResponseEntity<SpotifyTokenResponse> postWithRetry(String url, HttpEntity<?> request) {
+        for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
+            try {
+                return createAuthorizedRestTemplate().postForEntity(url, request, SpotifyTokenResponse.class);
+            } catch (HttpClientErrorException.TooManyRequests e) {
+                String retryAfter = e.getResponseHeaders().getFirst("Retry-After");
+                int delay = retryAfter != null ? Integer.parseInt(retryAfter) : 2;
 
+                System.out.println("Rate limited on token endpoint. Retrying in " + delay + " seconds (Attempt " + (attempt + 1) + ")");
+                try {
+                    Thread.sleep(delay * 1000L);
+                } catch (InterruptedException ignored) {}
+            }
+        }
+
+        throw new RuntimeException("Failed to retrieve token after multiple retry attempts due to rate limiting.");
+    }
+
+    public SpotifyTokenResponse exchangeCodeForToken(String code) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("redirect_uri", config.getRedirectUri());
         params.add("grant_type", "authorization_code");
@@ -63,11 +83,7 @@ public class OAuthService {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-        ResponseEntity<SpotifyTokenResponse> response = createAuthorizedRestTemplate().postForEntity (
-                "https://accounts.spotify.com/api/token",
-                request,
-                SpotifyTokenResponse.class
-        );
+        ResponseEntity<SpotifyTokenResponse> response = postWithRetry("https://accounts.spotify.com/api/token", request);
 
         tokenStore.saveTokens(
                 Objects.requireNonNull(response.getBody()).getAccessToken(),
@@ -98,11 +114,7 @@ public class OAuthService {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-        ResponseEntity<SpotifyTokenResponse> response = createAuthorizedRestTemplate().postForEntity(
-                "https://accounts.spotify.com/api/token",
-                request,
-                SpotifyTokenResponse.class
-        );
+        ResponseEntity<SpotifyTokenResponse> response = postWithRetry("https://accounts.spotify.com/api/token", request);
 
         SpotifyTokenResponse tokenResponse = Objects.requireNonNull(response.getBody());
 
@@ -114,7 +126,7 @@ public class OAuthService {
     }
 
     public String getValidAccessToken() {
-        if(tokenStore.isTokenExpired()) {
+        if (tokenStore.isTokenExpired()) {
             refreshAccessToken();
         }
 
