@@ -21,7 +21,6 @@ public class RestTemplateConfig {
             ClientHttpResponse response = execution.execute(request, body);
 
             if (response.getStatusCode().value() == 401) {
-                // Accede al OAuthService solo cuando lo necesites (evita ciclo directo)
                 com.spotifyapp.Spotify_backend.auth.service.OAuthService oAuthService = oAuthServiceProvider.getIfAvailable();
                 if (oAuthService != null) {
                     oAuthService.refreshAccessToken();
