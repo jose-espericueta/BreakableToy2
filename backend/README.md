@@ -7,7 +7,9 @@ This is the backend component of the BreakableToy2 project, developed using Spri
 - Java 21 with Spring Boot and Gradle
 - RESTful API structure
 - Spotify Web API integration
-- OAuth 2.0 support 
+- OAuth 2.0 Authorization Code Flow
+- Automatic token refresh and retry on 401 errors
+- Rate-limiting handling (HTTP 429 with Retry-After)
 - Docker support for containerized deployment
 - Code coverage with JaCoCo
 
@@ -16,14 +18,17 @@ This is the backend component of the BreakableToy2 project, developed using Spri
 1. Navigate to the backend directory:
    ```bash 
    cd backend
+   ```
 
 2. Run the application using Gradle:
    ```bash
    ./gradlew bootRun
+   ```
 
 3. Access the backend at:
    ```bash
    http://localhost:8080
+   ```
 
 ## Running with Docker
 
@@ -85,86 +90,46 @@ build/reports/tests/test/index.html
 
 ### Covered Tests
 
-The following OAuth-related components are covered with unit tests:
+Includes full test coverage for:
 
-- **OAuthService**
-   - `buildAuthUri()`: Ensures the correct Spotify login URL is generated
-- **AuthController**
-   - `POST /auth/spotify`: Returns the redirect URL to initiate Spotify login
-   - `GET /auth/callback`: Simulates receiving the code and exchanging it for tokens
+- OAuth login and token flow
+- Artist and album controller tests
+- Token storage and refresh logic
+- Retry on expired tokens (401)
+- Basic search functionality
 
-All tests use **JUnit 5**, **Mockito**, and **MockMvc** for controller testing.
+Technologies: **JUnit 5**, **Mockito**, **MockMvc**, **Spring Boot Test**
 
 ## Spotify OAuth 2.0 Authentication Flow
 
-This backend application integrates with the Spotify Web API using OAuth 2.0 Authorization Code Flow. Below is a summary of how the authentication process works:
+This backend application integrates with the Spotify Web API using OAuth 2.0 Authorization Code Flow.
 
-### Authentication Steps
+1. **User clicks login**: Redirects to Spotify's login page.
+2. **Spotify callback**: Redirects back with a `code`.
+3. **Token exchange**: Backend exchanges `code` for `access_token` and `refresh_token`.
+4. **Storage**: Tokens are stored in memory.
+5. **Refresh logic**: Expired access tokens are refreshed automatically.
+6. **401 retry**: If an API call returns 401, token is refreshed and request is retried.
+7. **429 retry**: If Spotify responds with 429, backend waits `Retry-After` and retries.
 
-1. **Initiate Login**
-   - `POST /auth/spotify`
-   - Returns a `redirectUrl` that points to Spotify’s login/authorization page.
+## Rate Limiting Handling (HTTP 429)
 
-2. **Redirect to Spotify**
-   - The frontend (or user) uses the `redirectUrl` to navigate to Spotify’s consent page.
+If Spotify returns a 429 (Too Many Requests), the backend:
 
-3. **User Grants Access**
-   - After login and authorization, Spotify redirects the user to the backend callback URL:
-     ```
-     http://127.0.0.1:8080/auth/callback?code=...
-     ```
+- Detects the status code.
+- Extracts `Retry-After` header.
+- Waits and retries up to 3 times.
+- Logs the retry event for debugging.
 
-4. **Backend Exchanges Code for Tokens**
-   - The `code` from Spotify is received and exchanged for an `access_token` and `refresh_token` via:
-     ```http
-     GET /auth/callback?code=...
-     ```
+This prevents breaking the app during heavy usage and follows Spotify’s best practices.
 
-5. **Token Storage**
-   - Tokens are securely stored in memory using a singleton component (`SpotifyTokenStore`) so they can be reused for authenticated requests to Spotify.
+## Key Files
 
-### Token Refresh Logic
-To ensure continued access to Spotify's Web API without requiring the user to log in again, this backend implements a **token refresh mechanism**
+- `OAuthService.java`: OAuth flow, refresh logic.
+- `SpotifyTokenStore.java`: Stores token and expiration info.
+- `SpotifyAuthInterceptor.java`: Automatically refreshes token and retries on 401.
+- `ArtistService.java`: Handles all Spotify API calls and 429 retry logic.
 
-### How it works
-
-1. **Access Token Expiry Detection**:
-   - The application checks if the access token has expired before making requests.
-   - This is done using the `SpotifyTokenStore` class, which tracks the token's expiration time (`expiresAt`).
-
-2. **Automatic Refresh on Expiry**:
-   - If the token is expired, the method `refreshAccessToken()` in `OAuthService` uses the stored refresh token to request a  new access token.
-   - The new token and its expiration time are stored again in memory.
-
-3. **Transparent Retry on 401**
-   - If a request to Spotify's API returns `401 Unauthorized`, the `SpotifyAuthInterceptor` catches it.
-   - It triggers a token refresh and retries the failed request automatically.
-
-4. **Token Caching**:
-   - When a token is refreshed, its new expiration timestamp is stored using `Instant.now().plusSeconds(expiresIn)`.
-
-### Key Files
-
-- `OAuthService.java`: Contains the logic to detect expiration and refresh tokens.
-- `SpotifyTokenStore.java`: Stores access/refresh tokens and calculates expiration time.
-- `SpotifyAuthInterceptor.java`: Handles retrying failed Spotify request transparently.
-
-### No user re-login needed
-
-This logic ensures the user stays logged in, as long as the refresh token is valid.
-
-### Data Flow
-
-- **Request**: Backend → Spotify (`/api/token`)
-- **Response**: Spotify returns token data, which is mapped via `SpotifyTokenResponse` DTO.
-- **Storage**: Tokens are saved temporarily in memory (not persisted across server restarts).
-
-### Security Notes
-
-- Tokens are never logged or exposed to the client directly.
-- Storage is temporary (RAM-only) for development purposes.
-- Can be replaced with secure DB storage in production.
-   
 ## License
 
 This project is licensed under the MIT License.
