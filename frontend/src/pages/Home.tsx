@@ -5,11 +5,11 @@ import { AuthContext } from '../context/AuthContext';
 const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setToken } = useContext(AuthContext);
+  const { token, setToken } = useContext(AuthContext);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const token = params.get('access_token');
+    const tokenFromUrl = params.get('access_token');
     const error = params.get('error');
 
     if (error) {
@@ -17,11 +17,18 @@ const Home = () => {
       return;
     }
 
-    if (token) {
-      setToken(token);
+    if (tokenFromUrl) {
+      setToken(tokenFromUrl);
       navigate('/dashboard');
+      return;
     }
-  }, [location, setToken, navigate]);
+
+    if (token) {
+      navigate('/dashboard');
+    } else {
+      navigate('/login');
+    }
+  }, [location, setToken, token, navigate]);
 
   return (
     <div>

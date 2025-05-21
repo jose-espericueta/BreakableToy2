@@ -2,10 +2,10 @@ import { useEffect, useState, useContext } from 'react';
 import ArtistCard from '../components/ArtistCard';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import './Dashboard.css'
+import './Dashboard.css';
 
 const Dashboard = () => {
-  const { token } = useContext(AuthContext);
+  const { token, setToken } = useContext(AuthContext);
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -13,6 +13,12 @@ const Dashboard = () => {
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [searchType, setSearchType] = useState('artist');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!token) {
+      navigate('/login');
+    }
+  }, [token, navigate]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -54,12 +60,21 @@ const Dashboard = () => {
       .finally(() => setLoading(false));
   }, [token, debouncedQuery, searchType]);
 
+  const handleLogout = () => {
+    setToken(null);
+    navigate('/login');
+  };
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
   if (results.length === 0) return <p>No results found</p>;
 
   return (
     <div className="dashboard-container">
+      <div style={{ textAlign: 'right', marginBottom: '10px' }}>
+        <button onClick={handleLogout} className="logout-button">Logout</button>
+      </div>
+
       <div className="search-controls">
         <label htmlFor="searchType" className="search-label">Search type:</label>
         <select
@@ -98,7 +113,6 @@ const Dashboard = () => {
                 })
                   .then(res => res.json())
                   .then(data => {
-                    console.log("preview_url: ", data.preview_url);
                     if (data.preview_url) {
                       const audio = new Audio(data.preview_url);
                       audio.play();
